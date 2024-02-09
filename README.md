@@ -21,7 +21,7 @@ I set everything up so that this directory can be easily renamed or moved later.
 
 ### Clone GitHub Repository
 
-Clone the [MMA GitHub Repository](https://github.com/visciric/Projects.git) into the working directory. You can use either *GitHub Desktop* or the following command in a terminal:
+Clone the [Projects GitHub Repository](https://github.com/visciric/Projects.git) into the working directory. You can use either *GitHub Desktop* or the following command in a terminal:
 
 ```
 git clone https://github.com/visciric/Projects.git

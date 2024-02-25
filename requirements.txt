@@ -20,3 +20,4 @@ seaborn
 snowballstemmer
 xgboost
 yellowbrick
+fastf1

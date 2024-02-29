@@ -21,3 +21,4 @@ snowballstemmer
 xgboost
 yellowbrick
 fastf1
+dotenv

@@ -22,3 +22,4 @@ xgboost
 yellowbrick
 fastf1
 dotenv
+plotly

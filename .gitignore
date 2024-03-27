@@ -1,6 +1,8 @@
 Alarm_System
 info.txt
 rus_alo.ipynb
+
+f1_cache
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

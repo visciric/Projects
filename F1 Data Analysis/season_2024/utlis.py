@@ -119,3 +119,57 @@ def plot_race_results(session,session_name, figsize=(12, 5), dpi=300):
 
 # # Example usage
 # plot_race_results(session, 'Bahrain')
+
+
+
+import pandas as pd
+
+def calculate_lap_metrics(laps_df):
+    """
+    Sorts drivers by position for each lap, calculates the delta times to the driver in front and behind,
+    and calculates the gap to the leader.
+
+    Parameters:
+    - laps_df: DataFrame containing lap data. Must include 'LapNumber', 'Driver', 'LapTime', and 'Position'.
+
+    Returns:
+    - DataFrame with additional 'DeltaTimeToFront', 'DeltaTimeToBehind', and 'GapToLeader' columns representing
+      the time differences and gap to the leader for each lap.
+    """
+    # Ensure laps are sorted by LapNumber and Position for consistent calculations
+    laps_df = laps_df.sort_values(by=['LapNumber', 'Position'])
+
+    # Initialize columns for the delta times and cumulative time
+    laps_df['DeltaTimeToFront'] = pd.NA
+    laps_df['DeltaTimeToBehind'] = pd.NA
+    laps_df['CumulativeTime'] = laps_df.groupby('Driver')['LapTime'].cumsum()
+    laps_df['GapToLeader'] = pd.NA
+
+    # Iterate over each lap in the race
+    for lap in laps_df['LapNumber'].unique():
+        lap_data = laps_df[laps_df['LapNumber'] == lap]
+
+        # Leader's cumulative time for the gap calculation
+        leader_time = lap_data.iloc[0]['CumulativeTime']
+
+        # Calculate the delta times and gap to the leader
+        for i in range(len(lap_data)):
+            if i > 0:  # Skip the first row (leader) for delta time calculations
+                current_driver_time = lap_data.iloc[i]['LapTime'].total_seconds()
+                front_driver_time = lap_data.iloc[i - 1]['LapTime'].total_seconds()
+                delta_time_to_front = current_driver_time - front_driver_time
+                laps_df.loc[lap_data.iloc[i].name, 'DeltaTimeToFront'] = delta_time_to_front
+
+                # Calculate and assign the delta time to the driver behind if not the last driver
+                if i < len(lap_data) - 1:
+                    behind_driver_time = lap_data.iloc[i + 1]['LapTime'].total_seconds()
+                    delta_time_to_behind = behind_driver_time - current_driver_time
+                    laps_df.loc[lap_data.iloc[i].name, 'DeltaTimeToBehind'] = delta_time_to_behind
+
+            # Gap to the leader calculation for all drivers
+            laps_df.loc[lap_data.iloc[i].name, 'GapToLeader'] = lap_data.iloc[i]['CumulativeTime'] - leader_time
+
+    # Replace pd.NA with appropriate representations
+    laps_df['GapToLeader'].fillna(pd.Timedelta(seconds=0), inplace=True)
+
+    return laps_df

@@ -3,6 +3,10 @@ import fastf1 as ff1
 import plotly
 import plotly.graph_objs as go
 import matplotlib.pyplot as plt
+import fastf1.plotting
+import pandas as pd 
+import seaborn as sns
+
 
 def setup_cache(path):
     if not os.path.exists(path):
@@ -121,9 +125,6 @@ def plot_race_results(session,session_name, figsize=(12, 5), dpi=300):
 # plot_race_results(session, 'Bahrain')
 
 
-
-import pandas as pd
-
 def calculate_lap_metrics(laps_df):
     """
     Sorts drivers by position for each lap, calculates the delta times to the driver in front and behind,
@@ -173,3 +174,69 @@ def calculate_lap_metrics(laps_df):
     laps_df['GapToLeader'].fillna(pd.Timedelta(seconds=0), inplace=True)
 
     return laps_df
+
+
+
+def plot_fastest_qualifying_laps(q1, q2, q3, figsize=(15, 6), dpi=300):
+    all_drivers = set(q1['Driver']).union(set(q2['Driver']), set(q3['Driver']))
+
+    plt.figure(figsize=figsize, dpi=dpi)
+
+    for driver in all_drivers:
+        driver_lap_times = []
+        driver_sessions = []
+
+        for round, q_times in enumerate([q1, q2, q3], start=1):
+            fastest_lap_time = q_times[(q_times['Driver'] == driver) & (q_times['LapTime'] <= 100)]['LapTime'].min()
+            
+            if fastest_lap_time is not None:
+                driver_lap_times.append(fastest_lap_time)
+                driver_sessions.append(round)
+
+        # Plot the results for each driver
+        if driver_lap_times:
+            color = ff1.plotting.driver_color(driver)
+            plt.plot(driver_sessions, driver_lap_times, marker='o', label=driver, color=color)
+
+    plt.xlabel('Qualifying Session')
+    plt.ylabel('Lap Time (s)')
+    plt.title('Fastest Lap Time of Each Driver Over Sessions (Q1 to Q3)')
+    plt.xticks([1, 2, 3], ['Q1', 'Q2', 'Q3'])
+    plt.legend(loc="upper left", bbox_to_anchor=(1, 1.05))
+
+    plt.show()
+    
+def get_driver_colors(drivers):
+    driver_colors = {driver: fastf1.plotting.driver_color(driver) for driver in drivers}
+    return driver_colors 
+
+
+
+def plot_driver_laptimes(drivers):
+    fig, axes = plt.subplots(len(drivers), 1, figsize=(5, 7 * len(drivers)))
+    
+    for i, driver in enumerate(drivers):
+        driver_data = session.laps.pick_driver(driver).pick_quicklaps().reset_index()
+        sns.scatterplot(
+            data=driver_data,
+            x="LapNumber",
+            y="LapTime",
+            ax=axes[i],
+            hue="Compound",
+            palette=fastf1.plotting.COMPOUND_COLORS,
+            s=80,
+            linewidth=0,
+            legend="auto",
+        )
+
+        axes[i].set_xlabel("Lap Number")
+        axes[i].set_ylabel("Lap Time")
+        axes[i].invert_yaxis()  # Invert the y-axis for lap time
+        axes[i].set_title(f"{driver} Laptimes")
+        
+    plt.tight_layout()
+    plt.show()
+
+# Example usage:
+# drivers_to_plot = ["LEC", "SAI"] 
+# plot_driver_laptimes(drivers_to_plot)

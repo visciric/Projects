@@ -124,6 +124,54 @@ def plot_race_results(session,session_name, figsize=(12, 5), dpi=300):
 # # Example usage
 # plot_race_results(session, 'Bahrain')
 
+def plot_positions(session):
+    fig, ax = plt.subplots(figsize=(12, 5), dpi=300)
+    
+    for drv in session.drivers:
+        drv_laps = session.laps.pick_driver(drv)
+        if drv_laps.empty:
+            continue  # Skip drivers with no laps
+
+        abb = drv_laps['Driver'].iloc[0]
+        color = ff1.plotting.driver_color(abb)
+        ax.plot(drv_laps['LapNumber'], drv_laps['Position'], label=abb, color=color)
+
+    for drv in session.drivers:
+        drv_laps = session.laps.pick_driver(drv)
+        if drv_laps.empty or np.isnan(drv_laps['Position'].iloc[0]):
+            continue
+        
+        abb = drv_laps['Driver'].iloc[0]
+        starting_position = int(drv_laps['Position'].iloc[0])
+        ax.text(0.8, starting_position, f"P{starting_position}: {abb}", color='w', ha='right')
+
+    for drv in session.drivers:
+        drv_laps = session.laps.pick_driver(drv)
+        if drv_laps.empty:
+            continue
+        
+        abb = drv_laps['Driver'].iloc[0]
+        final_position = drv_laps['Position'].iloc[-1]
+        starting_position = int(drv_laps['Position'].iloc[0])
+        if np.isnan(final_position) or np.isnan(starting_position):
+            continue
+        
+        places_gained = int(starting_position - final_position)
+        places_text = f"({'+' if places_gained > 0 else '' if places_gained == 0 else '-'}{abs(places_gained)})"
+        ax.text(57, final_position, f"P{starting_position}:{abb} {places_text}", color='w', ha='left')
+
+    ax.annotate('Starting Position', xy=(-0.14, 0.4), xycoords='axes fraction', fontsize=14, color='w', rotation=90)
+    ax.annotate('Finishing Position', xy=(+1.14, 0.4), xycoords='axes fraction', fontsize=14, color='w', rotation=-90)
+    ax.set_ylim([20.5, 0.5])
+    ax.set_yticks([])
+    ax.set_xlabel('Lap', fontsize=14)
+    ax.set_xlim([1, 57])
+    plt.title(f'{session}', font='Arial', fontweight='bold', fontsize=24)
+    plt.tight_layout()
+    plt.show()
+
+
+# plot_f1_positions(session)
 
 def calculate_lap_metrics(laps_df):
     """

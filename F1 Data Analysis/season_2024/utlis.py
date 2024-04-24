@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import fastf1.plotting
 import pandas as pd 
 import seaborn as sns
+import numpy as np
 
 
 def setup_cache(path):
@@ -260,8 +261,8 @@ def get_driver_colors(drivers):
 
 
 
-def plot_driver_laptimes(drivers):
-    fig, axes = plt.subplots(len(drivers), 1, figsize=(5, 7 * len(drivers)))
+def plot_driver_laptimes(drivers, session):
+    fig, axes = plt.subplots(1, len(drivers),  figsize=(12,4))
     
     for i, driver in enumerate(drivers):
         driver_data = session.laps.pick_driver(driver).pick_quicklaps().reset_index()
